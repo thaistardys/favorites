@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Favoritos</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <h1>Meus Favoritos</h1>
+    </header>
+
+    <main>
+        <section class="form-section">
+            <form id="favorite-form">
+                <div class="form-group">
+                    <label for="title">Título</label>
+                    <input type="text" id="title" placeholder="Ex: Google" required>
+                </div>
+                <div class="form-group">
+                    <label for="url">Link (URL do Site)</label>
+                    <input type="url" id="url" placeholder="https://google.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="image-url">Link da Imagem / Logo (Opcional)</label>
+                    <input type="text" id="image-url" placeholder="Copie e cole a imagem ou link aqui">
+                </div>
+                <button type="submit">Enviar</button>
+            </form>
+        </section>
+
+        <section class="favorites-section" id="favorites-container"></section>
+    </main>
+
+    <!-- Modal de Edição -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal-content">
+            <h2>Editar Favorito</h2>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label for="edit-title">Título</label>
+                    <input type="text" id="edit-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-url">Link (URL do Site)</label>
+                    <input type="url" id="edit-url" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-image-url">Link da Imagem / Logo (Opcional)</label>
+                    <input type="text" id="edit-image-url">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="close-edit-modal">Cancelar</button>
+                    <button type="submit">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal-overlay" id="delete-modal">
+        <div class="modal-content text-center">
+            <h2>Excluir Favorito?</h2>
+            <p>Tem certeza que deseja apagar o favorito de forma permanente?</p>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="close-delete-modal">Cancelar</button>
+                <button type="button" class="btn-danger-confirm" id="confirm-delete-btn">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Todos os Direitos Reservados &copy; thaistardys</p>
+    </footer>
+
+</body>
+</html>
