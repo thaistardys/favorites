@@ -1,4 +1,6 @@
-/* RESET E VARIÁVEIS */
+/* ==========================================================================
+   RESET E VARIÁVEIS GERAIS
+   ========================================================================== */
 * {
     margin: 0;
     padding: 0;
@@ -12,7 +14,8 @@
     --btn-danger: #d9534f;
     --btn-secondary: #777777;
     --detail-color: #D2A494;
-    --section-color: #F5F5F5;
+    --section-color: #F5F5F5; /* Cinza claro e moderno */
+    --star-active: #FFD700;    /* Tom dourado para a estrela */
 }
 
 body {
@@ -39,11 +42,13 @@ header {
     border-bottom: 2px solid var(--detail-color);
 }
 
-/* BARRA DE AÇÃO (BOTÃO NOVO + INPUT BUSCA RESPONSIVO) */
+/* ==========================================================================
+   BARRA DE AÇÃO (BOTÃO NOVO + PESQUISA)
+   ========================================================================== */
 .action-bar {
     padding: 1.5rem 0;
     display: flex;
-    flex-direction: column; /* Mobile-First: empilhado */
+    flex-direction: column; /* Mobile-First: Elementos empilhados */
     gap: 1rem;
 }
 
@@ -59,7 +64,7 @@ header {
     font-size: 1rem;
 }
 
-/* FORMULÁRIOS DENTRO DOS MODAIS */
+/* FORMULÁRIOS INTERNOS DOS MODAIS */
 .form-group {
     display: flex;
     flex-direction: column;
@@ -95,14 +100,17 @@ button:hover {
     opacity: 0.9;
 }
 
-/* CARDS CONTAINER */
+/* ==========================================================================
+   SEÇÃO E ESTRUTURA DOS CARDS (CSS GRID)
+   ========================================================================== */
 .favorites-section {
     background-color: var(--section-color);
     padding: 1.5rem;
     border-radius: 8px;
-    display: flex;
-    flex-direction: column;
+    display: grid;                   /* Grid ativo para alinhar as colunas */
+    grid-template-columns: 1fr;      /* Padrão Mobile: 1 coluna */
     gap: 1rem;
+    align-content: start;
     flex-grow: 1;
 }
 
@@ -111,17 +119,20 @@ button:hover {
     background-color: var(--bg-color);
     border: 1px solid var(--detail-color);
     border-radius: 6px;
-    padding: 1.25rem;
+    padding: 1.5rem 1.25rem 1.25rem 1.25rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
     text-align: center;
+    position: relative; /* Base absoluta para o posicionamento da estrela */
+    width: 100%;
 }
 
 .card h3 {
     font-size: 1.2rem;
     word-break: break-word;
+    padding-right: 1.5rem; /* Margem de segurança para o texto não bater na estrela */
 }
 
 .card .logo-link {
@@ -131,9 +142,33 @@ button:hover {
 }
 
 .card .logo-link:hover {
-    transform: scale(1.06);
+    transform: scale(1.06); /* Zoom interativo na imagem */
 }
 
+/* BOTÃO DA ESTRELA */
+.star-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    padding: 0;
+    width: auto;
+    font-size: 1.4rem;
+    color: var(--detail-color);
+    cursor: pointer;
+    transition: transform 0.1s ease, color 0.2s ease;
+}
+
+.star-btn:hover {
+    transform: scale(1.15);
+}
+
+.star-btn.active {
+    color: var(--star-active);
+}
+
+/* BOTÕES INTERNOS DOS CARDS */
 .card .actions {
     width: 100%;
     display: flex;
@@ -144,7 +179,7 @@ button:hover {
 }
 
 .card .actions button {
-    flex: 0 1 85px;
+    flex: 0 1 85px; /* Define tamanhos compactos e simétricos */
     padding: 0.4rem 0.5rem;
     font-size: 0.8rem;
     font-weight: normal;
@@ -158,7 +193,22 @@ button:hover {
     background-color: var(--btn-danger);
 }
 
-/* MODAIS */
+/* CLASSE DE ALINHAMENTO ABSOLUTO PARA ESTADO VAZIO / SEM RESULTADOS */
+.empty-state {
+    grid-column: 1 / -1;       /* Cruza todas as colunas do Grid */
+    justify-self: center;      /* Centraliza horizontalmente de ponta a ponta */
+    align-self: center;         /* Centraliza verticalmente */
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--text-color);
+    font-weight: bold;
+    font-size: 1.1rem;
+    width: 100%;
+}
+
+/* ==========================================================================
+   ESTRUTURA DOS MODAIS (POP-UPS)
+   ========================================================================== */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -221,9 +271,11 @@ footer {
     font-size: 0.9rem;
 }
 
-/* MEDIA QUERIES RESPONSIVAS */
+/* ==========================================================================
+   MEDIA QUERIES RESPONSIVAS
+   ========================================================================== */
 @media (min-width: 480px) {
-    /* Alinha botão e busca lado a lado a partir de telas médias */
+    /* Barra de busca e botão dividem espaço na horizontal em telas médias */
     .action-bar {
         flex-direction: row;
         justify-content: space-between;
@@ -236,25 +288,20 @@ footer {
     }
 
     .action-bar input {
-        max-width: 300px; /* Tamanho controlado para o campo de busca */
+        max-width: 300px;
     }
+}
 
+/* Ativa 2 colunas de cards para smartphones em modo paisagem ou mini-tablets */
+@media (min-width: 520px) {
     .favorites-section {
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-content: flex-start;
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
-@media (min-width: 480px) and (max-width: 767px) {
-    .card {
-        width: calc(50% - 0.5rem);
-    }
-}
-
+/* Ativa 3 colunas simétricas perfeitas para desktops e laptops grandes */
 @media (min-width: 768px) {
-    .card {
-        width: calc(33.333% - 0.67rem);
+    .favorites-section {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
-
