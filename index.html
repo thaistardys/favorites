@@ -14,7 +14,17 @@
     </header>
 
     <main>
-        <section class="form-section">
+        <section class="action-bar">
+            <button type="button" id="open-add-modal-btn">+ Novo Favorito</button>
+        </section>
+
+        <section class="favorites-section" id="favorites-container"></section>
+    </main>
+
+    <!-- Modal de Cadastro -->
+    <div class="modal-overlay" id="add-modal">
+        <div class="modal-content">
+            <h2>Novo Favorito</h2>
             <form id="favorite-form">
                 <div class="form-group">
                     <label for="title">Título</label>
@@ -28,12 +38,13 @@
                     <label for="image-url">Link da Imagem / Logo (Opcional)</label>
                     <input type="text" id="image-url" placeholder="Copie e cole a imagem ou link aqui">
                 </div>
-                <button type="submit">Enviar</button>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel close-modal">Cancelar</button>
+                    <button type="submit">Enviar</button>
+                </div>
             </form>
-        </section>
-
-        <section class="favorites-section" id="favorites-container"></section>
-    </main>
+        </div>
+    </div>
 
     <!-- Modal de Edição -->
     <div class="modal-overlay" id="edit-modal">
@@ -54,7 +65,7 @@
                     <input type="text" id="edit-image-url">
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" id="close-edit-modal">Cancelar</button>
+                    <button type="button" class="btn-cancel close-modal">Cancelar</button>
                     <button type="submit">Salvar Alterações</button>
                 </div>
             </form>
@@ -67,7 +78,7 @@
             <h2>Excluir Favorito?</h2>
             <p>Tem certeza que deseja apagar o favorito de forma permanente?</p>
             <div class="modal-actions">
-                <button type="button" class="btn-cancel" id="close-delete-modal">Cancelar</button>
+                <button type="button" class="btn-cancel close-modal">Cancelar</button>
                 <button type="button" class="btn-danger-confirm" id="confirm-delete-btn">Excluir</button>
             </div>
         </div>
