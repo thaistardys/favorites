@@ -1,9 +1,11 @@
+// 1. INICIALIZAÇÃO DO SISTEMA (AGUARDA O CARREGAMENTO COMPLETO DO HTML)
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('favorites-container');
     const form = document.getElementById('favorite-form');
     const openAddModalBtn = document.getElementById('open-add-modal-btn');
-    const searchInput = document.getElementById('search-input'); // Novo elemento capturado
+    const searchInput = document.getElementById('search-input');
     
+    // Mapeamento explícito de todos os Modais
     const addModal = document.getElementById('add-modal');
     const editModal = document.getElementById('edit-modal');
     const editForm = document.getElementById('edit-form');
@@ -18,13 +20,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let idItemParaDeletar = null;
     let favoritesList = [];
 
-    openAddModalBtn.addEventListener('click', () => toggleModal(addModal));
+    // Gerenciamento de Abertura do Modal de Cadastro
+    openAddModalBtn.addEventListener('click', () => {
+        toggleModal(addModal);
+    });
     
-    // Escuta em tempo real o que o usuário digita na barra de busca
+    // Filtro em Tempo Real
     searchInput.addEventListener('input', () => {
         renderAllCards(searchInput.value.trim());
     });
 
+    // Fechamento Inteligente de Modais pela classe .close-modal
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const openModal = e.target.closest('.modal-overlay');
@@ -33,17 +39,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    confirmDeleteBtn.addEventListener('click', function() {
+    // 3. EVENTOS ADMINISTRATIVOS (CRUD)
+    confirmDeleteBtn.addEventListener('click', () => {
         if (idItemParaDeletar !== null) {
             favoritesList = favoritesList.filter(item => item.id !== idItemParaDeletar);
-            renderAllCards(searchInput.value.trim()); // Mantém o filtro atual ao deletar
+            renderAllCards(searchInput.value.trim());
             saveToLocalStorage();
             toggleModal(deleteModal);
             idItemParaDeletar = null;
         }
     });
 
-    form.addEventListener('submit', function(event) {
+    // Submissão do Formulário de Criação (Dentro do Modal)
+    form.addEventListener('submit', (event) => {
         event.preventDefault();
 
         const title = document.getElementById('title').value.trim();
@@ -55,17 +63,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!validateInputs(url, imageUrl)) return;
 
-        const favoriteItem = { id: Date.now(), title, url, imageUrl };
-        favoritesList.push(favoriteItem);
+        const newItem = { id: Date.now(), title, url, imageUrl, isStarred: false };
+        favoritesList.push(newItem);
         
-        searchInput.value = ''; // Limpa a busca ao cadastrar um novo para exibi-lo imediatamente
+        searchInput.value = ''; // Reseta a barra de pesquisa
         renderAllCards();
         saveToLocalStorage();
         form.reset();
         toggleModal(addModal);
     });
 
-    editForm.addEventListener('submit', function(event) {
+    // Submissão do Formulário de Edição
+    editForm.addEventListener('submit', (event) => {
         event.preventDefault();
 
         const id = parseInt(editIdInput.value);
@@ -80,13 +89,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const index = favoritesList.findIndex(item => item.id === id);
         if (index !== -1) {
-            favoritesList[index] = { id, title, url, imageUrl };
-            renderAllCards(searchInput.value.trim()); // Mantém o termo pesquisado ao salvar a edição
+            const oldStarStatus = favoritesList[index].isStarred;
+            favoritesList[index] = { id, title, url, imageUrl, isStarred: oldStarStatus };
+            renderAllCards(searchInput.value.trim());
             saveToLocalStorage();
             toggleModal(editModal);
         }
     });
 
+    // 4. FUNÇÕES DE SUPORTE E VALIDAÇÃO
     function formatProtocol(string) {
         if (!string || /^data:/i.test(string)) return string;
         if (!/^https?:\/\//i.test(string)) return 'https://' + string;
@@ -115,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleModal(modalElement) {
-        modalElement.classList.toggle('active');
+        if (modalElement) modalElement.classList.toggle('active');
     }
 
     function openEditModal(item) {
@@ -131,6 +142,17 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleModal(deleteModal);
     }
 
+    // Gerencia o clique da estrela e dispara a reordenação em tempo real
+    function toggleStarFavorite(id) {
+        const index = favoritesList.findIndex(item => item.id !== id);
+        const targetItem = favoritesList.find(item => item.id === id);
+        if (targetItem) {
+            targetItem.isStarred = !targetItem.isStarred;
+            renderAllCards(searchInput.value.trim());
+            saveToLocalStorage();
+        }
+    }
+
     function loadFavorites() {
         const storageData = localStorage.getItem('my_favorites_links');
         if (storageData) {
@@ -143,94 +165,118 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('my_favorites_links', JSON.stringify(favoritesList));
     }
 
-    // Função de renderização refatorada para aceitar o parâmetro opcional de filtro
+    // 5. CONSTRUTOR DINÂMICO DE ELEMENTOS HTML (DOM)
+    function createCardElement(item) {
+        const domain = new URL(item.url).hostname.replace('www.', '');
+        const initials = item.title.substring(0, 2).toUpperCase();
+        const finalLogoUrl = item.imageUrl ? item.imageUrl : `https://vemetric.com{domain}?sz=128`;
+
+        const card = document.createElement('div');
+        card.classList.add('card');
+
+        // Cria e configura o botão de estrela
+        const starBtn = document.createElement('button');
+        starBtn.type = 'button';
+        starBtn.classList.add('star-btn');
+        if (item.isStarred) starBtn.classList.add('active');
+        starBtn.innerHTML = '★';
+        starBtn.addEventListener('click', () => toggleStarFavorite(item.id));
+        card.appendChild(starBtn);
+
+        const h3 = document.createElement('h3');
+        h3.textContent = item.title;
+        card.appendChild(h3);
+
+        // Logo/Imagem transformada em link clicável
+        const logoLink = document.createElement('a');
+        logoLink.href = item.url;
+        logoLink.target = '_blank';
+        logoLink.classList.add('logo-link');
+
+        const logoContainer = document.createElement('div');
+        logoContainer.style.cssText = 'width: 96px; height: 96px; display: flex; align-items: center; justify-content: center;';
+
+        const img = document.createElement('img');
+        img.src = finalLogoUrl;
+        img.alt = `Logo de ${item.title}`;
+        img.style.cssText = 'width: 100%; height: 100%; object-fit: contain; border-radius: 6px;';
+
+        // Desenha o círculo com as iniciais em texto caso o link ou favicon quebre
+        img.onerror = function() {
+            img.remove(); 
+            const fallback = document.createElement('div');
+            fallback.style.cssText = 'width: 100%; height: 100%; background-color: var(--detail-color); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2rem; border-radius: 50%;';
+            fallback.textContent = initials;
+            logoContainer.appendChild(fallback);
+        };
+
+        logoContainer.appendChild(img);
+        logoLink.appendChild(logoContainer);
+        card.appendChild(logoLink);
+
+        // Painel Administrativo Inferior do Card (Botões Menores)
+        const actionsContainer = document.createElement('div');
+        actionsContainer.classList.add('actions');
+
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.classList.add('edit-btn');
+        editBtn.textContent = 'Editar';
+        editBtn.addEventListener('click', () => openEditModal(item));
+        actionsContainer.appendChild(editBtn);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.classList.add('delete-btn');
+        deleteBtn.textContent = 'Excluir';
+        deleteBtn.addEventListener('click', () => openDeleteModal(item.id));
+        actionsContainer.appendChild(deleteBtn);
+
+        card.appendChild(actionsContainer);
+        return card;
+    }
+
+    // 6. CONTROLADOR DE RENDERIZAÇÃO E ORDENAÇÃO POR ESTRELA
     function renderAllCards(filterText = '') {
         container.innerHTML = '';
 
-        // Se o banco local estiver completamente vazio, exibe o estado padrão de início
+        // Estado Inicial Vazio (Aplica a classe CSS .empty-state para centralização absoluta)
         if (favoritesList.length === 0) {
             const emptyMessage = document.createElement('p');
+            emptyMessage.className = 'empty-state';
             emptyMessage.textContent = 'Nenhum favorito cadastrado ainda. Clique em "+ Novo Favorito" para começar!';
-            emptyMessage.style.cssText = 'width: 100%; text-align: center; padding: 2.5rem 1rem; color: var(--text-color); font-weight: bold; font-size: 1.1rem;';
             container.appendChild(emptyMessage);
             return;
         }
 
-        // Filtra a lista baseando-se no que foi digitado (converte tudo para minúsculo)
-        const filteredList = favoritesList.filter(item => 
+        // Filtra a lista unificada com base na barra de pesquisas em tempo real
+        let filteredList = favoritesList.filter(item => 
             item.title.toLowerCase().includes(filterText.toLowerCase())
         );
 
-        // Se o usuário digitou algo na busca mas nada coincidiu, exibe uma mensagem específica de busca sem resultados
+
+					        // Estado de Busca Sem Resultados
         if (filteredList.length === 0 && filterText !== '') {
             const noResultsMessage = document.createElement('p');
+            noResultsMessage.className = 'empty-state';
             noResultsMessage.textContent = `Nenhum favorito encontrado para "${filterText}".`;
-            noResultsMessage.style.cssText = 'width: 100%; text-align: center; padding: 2.5rem 1rem; color: var(--text-color); font-weight: bold; font-size: 1.1rem;';
             container.appendChild(noResultsMessage);
             return;
         }
 
-        // Renderiza apenas os itens filtrados na tela
+        // ORDENAÇÃO INTELIGENTE: Puxa todos os itens marcados com estrela para o início da lista única
+        filteredList.sort((a, b) => {
+            if (a.isStarred && !b.isStarred) return -1;
+            if (!a.isStarred && b.isStarred) return 1;
+            return 0;
+        });
+
+        // Desenha na tela a lista unificada devidamente ordenada
         filteredList.forEach(item => {
-            const domain = new URL(item.url).hostname.replace('www.', '');
-            const initials = item.title.substring(0, 2).toUpperCase();
-            const finalLogoUrl = item.imageUrl ? item.imageUrl : `https://vemetric.com{domain}?sz=128`;
-
-            const card = document.createElement('div');
-            card.classList.add('card');
-
-            const h3 = document.createElement('h3');
-            h3.textContent = item.title;
-            card.appendChild(h3);
-
-            const logoLink = document.createElement('a');
-            logoLink.href = item.url;
-            logoLink.target = '_blank';
-            logoLink.classList.add('logo-link');
-            logoLink.title = `Acessar ${item.title}`;
-
-            const logoContainer = document.createElement('div');
-            logoContainer.style.cssText = 'width: 96px; height: 96px; display: flex; align-items: center; justify-content: center;';
-
-            const img = document.createElement('img');
-            img.src = finalLogoUrl;
-            img.alt = `Logo de ${item.title}`;
-            img.style.cssText = 'width: 100%; height: 100%; object-fit: contain; border-radius: 6px;';
-
-            img.onerror = function() {
-                img.remove(); 
-                const fallback = document.createElement('div');
-                fallback.style.cssText = 'width: 100%; height: 100%; background-color: var(--detail-color); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2rem; border-radius: 50%;';
-                fallback.textContent = initials;
-                logoContainer.appendChild(fallback);
-            };
-
-            logoContainer.appendChild(img);
-            logoLink.appendChild(logoContainer);
-            card.appendChild(logoLink);
-
-            const actionsContainer = document.createElement('div');
-            actionsContainer.classList.add('actions');
-
-            const editBtn = document.createElement('button');
-            editBtn.type = 'button';
-            editBtn.classList.add('edit-btn');
-            editBtn.textContent = 'Editar';
-            editBtn.addEventListener('click', () => openEditModal(item));
-            actionsContainer.appendChild(editBtn);
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.type = 'button';
-            deleteBtn.classList.add('delete-btn');
-            deleteBtn.textContent = 'Excluir';
-            deleteBtn.addEventListener('click', () => openDeleteModal(item.id));
-            actionsContainer.appendChild(deleteBtn);
-
-            card.appendChild(actionsContainer);
-            container.appendChild(card);
+            container.appendChild(createCardElement(item));
         });
     }
 
+    // Dispara a leitura inicial após o mapeamento completo e seguro do DOM
     loadFavorites();
 });
-
