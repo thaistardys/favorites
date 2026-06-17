@@ -2,7 +2,7 @@
 
 Uma aplicação web simples, limpa e funcional para gerenciar e armazenar seus links e sites favoritos diretamente no navegador. O projeto foi desenvolvido seguindo o conceito **Mobile-First**, garantindo uma experiência fluida tanto em dispositivos móveis quanto em computadores.
 
-▶️ **[Clique aqui para acessar o projeto em execução](https://github.io)**
+▶️ **[Clique aqui para acessar o projeto em execução](https://thaistardys.github.io/favorites/)**
 
 ---
 
