@@ -2,8 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('favorites-container');
     const form = document.getElementById('favorite-form');
     const openAddModalBtn = document.getElementById('open-add-modal-btn');
+    const searchInput = document.getElementById('search-input'); // Novo elemento capturado
     
-    // Elementos dos modais mapeados de forma concisa
     const addModal = document.getElementById('add-modal');
     const editModal = document.getElementById('edit-modal');
     const editForm = document.getElementById('edit-form');
@@ -18,9 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let idItemParaDeletar = null;
     let favoritesList = [];
 
-    // Gerenciador inteligente de fechar modais usando a mesma classe .close-modal
     openAddModalBtn.addEventListener('click', () => toggleModal(addModal));
     
+    // Escuta em tempo real o que o usuário digita na barra de busca
+    searchInput.addEventListener('input', () => {
+        renderAllCards(searchInput.value.trim());
+    });
+
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const openModal = e.target.closest('.modal-overlay');
@@ -29,18 +33,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Confirmação Definitiva de Exclusão
     confirmDeleteBtn.addEventListener('click', function() {
         if (idItemParaDeletar !== null) {
             favoritesList = favoritesList.filter(item => item.id !== idItemParaDeletar);
-            renderAllCards();
+            renderAllCards(searchInput.value.trim()); // Mantém o filtro atual ao deletar
             saveToLocalStorage();
             toggleModal(deleteModal);
             idItemParaDeletar = null;
         }
     });
 
-    // Envio do Formulário de Criação (Dentro do Modal)
     form.addEventListener('submit', function(event) {
         event.preventDefault();
 
@@ -56,13 +58,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const favoriteItem = { id: Date.now(), title, url, imageUrl };
         favoritesList.push(favoriteItem);
         
+        searchInput.value = ''; // Limpa a busca ao cadastrar um novo para exibi-lo imediatamente
         renderAllCards();
         saveToLocalStorage();
         form.reset();
         toggleModal(addModal);
     });
 
-    // Envio do Formulário de Edição
     editForm.addEventListener('submit', function(event) {
         event.preventDefault();
 
@@ -79,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const index = favoritesList.findIndex(item => item.id === id);
         if (index !== -1) {
             favoritesList[index] = { id, title, url, imageUrl };
-            renderAllCards();
+            renderAllCards(searchInput.value.trim()); // Mantém o termo pesquisado ao salvar a edição
             saveToLocalStorage();
             toggleModal(editModal);
         }
@@ -141,9 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('my_favorites_links', JSON.stringify(favoritesList));
     }
 
-    function renderAllCards() {
+    // Função de renderização refatorada para aceitar o parâmetro opcional de filtro
+    function renderAllCards(filterText = '') {
         container.innerHTML = '';
 
+        // Se o banco local estiver completamente vazio, exibe o estado padrão de início
         if (favoritesList.length === 0) {
             const emptyMessage = document.createElement('p');
             emptyMessage.textContent = 'Nenhum favorito cadastrado ainda. Clique em "+ Novo Favorito" para começar!';
@@ -152,7 +156,22 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        favoritesList.forEach(item => {
+        // Filtra a lista baseando-se no que foi digitado (converte tudo para minúsculo)
+        const filteredList = favoritesList.filter(item => 
+            item.title.toLowerCase().includes(filterText.toLowerCase())
+        );
+
+        // Se o usuário digitou algo na busca mas nada coincidiu, exibe uma mensagem específica de busca sem resultados
+        if (filteredList.length === 0 && filterText !== '') {
+            const noResultsMessage = document.createElement('p');
+            noResultsMessage.textContent = `Nenhum favorito encontrado para "${filterText}".`;
+            noResultsMessage.style.cssText = 'width: 100%; text-align: center; padding: 2.5rem 1rem; color: var(--text-color); font-weight: bold; font-size: 1.1rem;';
+            container.appendChild(noResultsMessage);
+            return;
+        }
+
+        // Renderiza apenas os itens filtrados na tela
+        filteredList.forEach(item => {
             const domain = new URL(item.url).hostname.replace('www.', '');
             const initials = item.title.substring(0, 2).toUpperCase();
             const finalLogoUrl = item.imageUrl ? item.imageUrl : `https://vemetric.com{domain}?sz=128`;
